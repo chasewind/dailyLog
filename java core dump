@@ -1,0 +1,19 @@
+1.core dump介绍
+
+        程序异常退出（crash）时会自动生成一个core文件，包含了程序运行时的内存，寄存器状态，堆栈指针，内存管理等信息，
+        也就是把程序当时工作的状态存储成一个文件。不仅仅是在出错的时候会生成core dump文件，在系统卡住或者cpu使用率很
+        高的时候也可以手动触发生成core dump文件（当然这种情况也可以直接通过jmap和jstack dump出内存和线程堆栈，
+        但JDK1.6以前，这2个命令经常执行不成功），这样就可以很好的分析了。
+
+2.生成core dump文件
+
+       core dump文件生成开关其实是通过对生成的文件大小进行控制达到的，默认大小是0，也就是说默认是不生成core dump文件的，
+       可以通过命令ulimit -c进行查看。将此参数修改成unlimited就可以生成core dump文件了，但值得注意的一点是，
+       每个应用进程都会读取自己的一套系统参数，可以查看进程对应的内存文件/proc/<pid>/limits中的信息来判断修改后的参数值
+       是否对此应用进程生效了，
+  core dump文件生成的默认路径在用户的工作目录（启动脚本目录），可以通过设置参数/proc/sys/kernel/core_pattern的值改变core dump
+  文件的最终生成路径及文件名格式。
+问题排查：
+一、先是gdb $JAVA_HOME/bin/java coredump_file，通过这个debug命令可以查看到应用crash时正在做什么。
+二、再是jstack $JAVA_HOME/bin/java coredump_file > a.txt获取应用crash时的线程堆栈
+三、可以通过命令jmap $JAVA_HOME$/bin/java coredump_file查看到应用的内存使用
